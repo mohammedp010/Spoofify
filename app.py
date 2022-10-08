@@ -27,12 +27,13 @@ def hello_world():
 @app.route("/addMusic", methods=["POST"])
 def add_music():
     """
-    Endpoint to AddMusic
+    Endpoint to add music
     params: 
         - musicName
         - artistId
-        - musicImage
         - releaseDate
+    file:
+        - musicImage
     """
     data = json.loads(request.form.get('data'))
     file = request.files['image'].read()
@@ -47,6 +48,37 @@ def add_music():
     else:
         try:
             music = Music(music_name=data["musicName"], music_image=file, music_dor=data["releaseDate"], artist_id=data["artistId"])
+            db.session.add(music)
+            db.session.commit()
+        except:
+            return jsonify({"error": "Unexpected error!"}), 400
+        
+    return jsonify({"status": "success"})
+
+@app.route("/addArtist", methods=["POST"])
+def add_artist():
+    """
+    Endpoint to add artist
+    params: 
+        - artistName
+        - artistDob
+        - artistBio(optional)
+    """
+    data = request.json
+
+    if (
+        "artistName" not in data
+        or "artistDob" not in data
+    ):
+        return jsonify({"error": "missing parameters in request!"}), 400
+    
+    artistBio=None
+    if data["artistBio"]:
+        artistBio=data["artistBio"]
+    
+    else:
+        try:
+            artist = Artist(artist_name=data["artistName"], music_dor=data["artistDob"], artist_bio=artistBio)
             db.session.add(music)
             db.session.commit()
         except:
@@ -73,9 +105,4 @@ def get_artist():
 
 
 if __name__ == "__main__":
-    
-    app.run(debug=True)
-    
-    
-
-    
+        app.run(debug=True)
