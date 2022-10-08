@@ -1,4 +1,4 @@
-from flask import Flask, request, json, jsonify
+from flask import Flask, request, json, jsonify, render_template
 
 from model import Music, Artist
 from flask_sqlalchemy import SQLAlchemy
@@ -20,8 +20,8 @@ db = SQLAlchemy(app)
 db.init_app(app)
 
 @app.route("/")
-def hello_world():
-    return "<p>Hello, World!</p>"
+def home():
+    return render_template('index.html')
 
 
 @app.route("/addMusic", methods=["POST"])
@@ -79,7 +79,7 @@ def add_artist():
     else:
         try:
             artist = Artist(artist_name=data["artistName"], music_dor=data["artistDob"], artist_bio=artistBio)
-            db.session.add(music)
+            db.session.add(artist)
             db.session.commit()
         except:
             return jsonify({"error": "Unexpected error!"}), 400
