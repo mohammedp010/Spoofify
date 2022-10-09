@@ -1,7 +1,14 @@
-from flask import Flask, request, json, jsonify, render_template
+import os, jwt
+from flask import Flask, request, json, jsonify, render_template, make_response
 
-from model import Music, Artist
+from flask_login import LoginManager
+from flask_login import UserMixin
+import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from model import Music, Artist, Rating, User
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import desc
 
 app = Flask(__name__)
 
@@ -19,10 +26,52 @@ app.config['SQLALCHEMY_DATABASE_URI'] = url
 db = SQLAlchemy(app)
 db.init_app(app)
 
+app.config['SECRET_KEY']='004f2af45d3a4e161a7dd2d17fdae47f'
+
+def token_required(f):
+   @wraps(f)
+   def decorator(*args, **kwargs):
+       token = None
+       if 'x-access-tokens' in request.headers:
+           token = request.headers['x-access-tokens']
+ 
+       if not token:
+           return jsonify({'message': 'a valid token is missing'})
+       try:
+           data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+           current_user = Users.query.filter_by(public_id=data['public_id']).first()
+       except:
+           return jsonify({'message': 'token is invalid'})
+ 
+       return f(current_user, *args, **kwargs)
+   return decorator
+
+@app.route('/login', methods=['POST']) 
+def login():
+   auth = request.authorization
+   if not auth or not auth.username or not auth.password: 
+       return make_response('could not verify', 401, {'Authentication': 'login required"'})  
+ 
+   user = db.session.execute(db.select(User).filter_by(user_name=auth.username)).first()[0]
+   print(user)
+   if check_password_hash(user.user_pwd, auth.password):
+       token = jwt.encode({'public_id' : user.user_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
+       return jsonify({'token' : token})
+ 
+   return make_response('could not verify',  401, {'Authentication': '"login required"'})
+
+@app.route('/signup', methods=['POST'])
+def signup(): 
+   data = request.get_json() 
+   hashed_password = generate_password_hash(data['password'], method='sha256')
+   new_user = User(user_name=data['name'], user_pwd=hashed_password, user_email=data["email"])
+   db.session.add(new_user) 
+   db.session.commit()   
+   return jsonify({'message': 'registered successfully'})
+
 @app.route("/")
 def home():
     return render_template('index.html')
-
 
 @app.route("/addMusic", methods=["POST"])
 def add_music():
@@ -75,7 +124,6 @@ def add_artist():
     artistBio=None
     if data["artistBio"]:
         artistBio=data["artistBio"]
-    
     else:
         try:
             artist = Artist(artist_name=data["artistName"], music_dor=data["artistDob"], artist_bio=artistBio)
@@ -102,7 +150,20 @@ def get_artist():
 
     return jsonify(ans)
 
+@app.route("/getTopTenMusic", methods=["GET"])
+def get_top_ten_music():
+    """
+    Endpoint to get top ten music
+    """
+    ans=[]
+    # data = db.session.execute(db.select(Music, Rating).filter(Music.artist_id==Rating.artist_id).order_by(desc(Rating.rating_val))).scalars()
+    
+    # for obj in data:
+    #     artist={}
+    #     print(obj)
+    #     ans.append(artist)
 
+    return jsonify(ans)
 
 if __name__ == "__main__":
         app.run(debug=True)

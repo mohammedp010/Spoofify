@@ -1,4 +1,6 @@
-from unicodedata import category
+# from passlib.apps import custom_app_context as pwd_context
+
+# from unicodedata import category
 from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
@@ -11,7 +13,7 @@ class Music(db.Model):
     artist_id = db.Column(db.ForeignKey("artist.artist_id"), nullable=False)
 
     def __repr__(self):
-        return '<Music %r>' % self.name
+        return '<Music %r>' % self.music_name
 
 class Artist(db.Model):
     __tablename__ = 'artist'
@@ -21,3 +23,28 @@ class Artist(db.Model):
     artist_bio = db.Column(db.String(500))
     def __repr__(self):
         return '<Artist %r>' % self.artist_name
+
+class Rating(db.Model):
+    __tablename__ = 'ratings'
+    rating_id = db.Column(db.Integer, primary_key=True)
+    rating_val = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
+    artist_id = db.Column(db.ForeignKey("artist.artist_id"), nullable=False)
+    music_id = db.Column(db.ForeignKey("music.music_id"), nullable=False)
+    def __repr__(self):
+        return '<Rating %r>' % self.music_id
+
+class User(db.Model):
+    __tablename__ = 'users'
+    user_id = db.Column(db.Integer, primary_key=True)
+    user_name = db.Column(db.String(50))
+    user_email = db.Column(db.String(50))
+    user_pwd = db.Column(db.String(255))
+    def __repr__(self):
+        return '<User %r>' % self.user_name
+
+    # def hash_password(self, password):
+    #     self.password_hash = pwd_context.encrypt(password)
+
+    # def verify_password(self, password):
+    #     return pwd_context.verify(password, self.password_hash)
+        
