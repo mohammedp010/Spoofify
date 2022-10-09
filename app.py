@@ -1,8 +1,8 @@
 import os, jwt
 from flask import Flask, request, json, jsonify, render_template, make_response
 
-from flask_login import LoginManager
-from flask_login import UserMixin
+# from flask_login import LoginManager
+# from flask_login import UserMixin
 import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -53,7 +53,7 @@ def login():
        return make_response('could not verify', 401, {'Authentication': 'login required"'})  
  
    user = db.session.execute(db.select(User).filter_by(user_name=auth.username)).first()[0]
-   print(user)
+#    print(user)
    if check_password_hash(user.user_pwd, auth.password):
        token = jwt.encode({'public_id' : user.user_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
        return jsonify({'token' : token})
@@ -69,7 +69,8 @@ def signup():
         - email
         - password
     """
-    data = request.json
+    data = request.get_json('data')
+    # print(data)
     hashed_password = generate_password_hash(data['password'], method='sha256')
     new_user = User(user_name=data['username'], user_pwd=hashed_password, user_email=data["email"])
     db.session.add(new_user) 
@@ -121,7 +122,7 @@ def add_artist():
         - artistBio(optional)
     """
     data = request.json
-
+    
     if (
         "artistName" not in data
         or "artistDob" not in data

@@ -4,343 +4,442 @@
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
 <html>
-    <head>
-        <meta charset="utf-8">  
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!-- <link rel="stylesheet" href="style.css"> -->
-        <link href="{{ url_for('static', filename='style.css') }}" />
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
-        <script>
-          function getItems() {
-            $.ajax({
-                url: "/getArtist",
-                type: "GET",
-                headers: {
-                    "accept": "*/*",
-                },
-                success: function(data) {
-                    $.each(data, function(key, value){
-                        $("#artistList").append('<option value="' + value.artistName + '">' + value.artistName +'</option>');
-                    });
-                    
-                },
-                
-                error: function(error) {
-                    alert(JSON.stringify(error));
-                }
-            });
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+    <link href="{{ url_for('static', filename='style.css') }}" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+      crossorigin="anonymous">
+    <script
+      src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+      crossorigin="anonymous"></script>
+    <script>
+                          function getItems() {
+                            $.ajax({
+                              url: "/getArtist",
+                              type: "GET",
+                              headers: {
+                                "accept": "*/*",
+                              },
+                              success: function (data) {
+                                $.each(data, function (key, value) {
+                                  $("#artistList").append('<option value="' + value.artistName + '">' + value.artistName + '</option>');
+                                });
+
+                              },
+
+                              error: function (error) {
+                                alert(JSON.stringify(error));
+                              }
+                            });
           }
 
 
-          //Login/Signup
+                          //Signup
 
-          
-          
+                          $(document).ready(function () {
+
+                            $("#reg").click(function () {
+                              var data = {
+                                "username": $("#username").val(),
+                                "email": $("#email").val(),
+                                "password": $("#pwd").val()
+                              }
+                              $.ajax({
+                                url: '/signup',
+                                type: 'POST',
+                                contentType: "application/json",
+                                data: JSON.stringify(data),
+                                dataType: "json",
+                                success: function (data, textStatus, xhr) {
+                                  alert('Success');
+                                  console.log(data);
+                                },
+                                error: function (xhr, textStatus, errorThrown) {
+                                  console.log(data);
+                                  alert('textStatus: ' + xhr.status);
+                                  alert(errorThrown);
+                                  console.log('Error in Operation' + errorThrown);
+                                }
+                              });
+                            });
+        });
+
+</script>
+<script>
+                          $(document).ready(function () {
+
+                            $("#btnLogin").click(function () {
+                              function make_base_auth(user, password) {
+                                var tok = user + ':' + password;
+                                var hash = btoa(tok);
+                                return "Basic " + hash;
+                              }
+                                var username= $("#usernameL").val();
+                                var password= $("#pwdL").val();
+                                $.ajax({
+                                  type: 'POST',
+                                  url: '/login',
+                                  dataType: 'json',
+                                  contentType: "application/json",
+                                  async: false,
+                                  beforeSend: function (xhr){ 
+                                      xhr.setRequestHeader('Authorization',"Basic " + btoa(username + ":" + password));
+                                  },
+                                  // contentType: 'application/json;charset=UTF-8',
+                                //   beforeSend: function (xhr) {
+                                //     xhr.setRequestHeader ("Authorization", "Basic " + btoa(username + ":" + password));
+                                // },
+                                  //whatever you need
+                                  // beforeSend: function (xhr) {
+                                  //     xhr.setRequestHeader('Authorization', make_base_auth(username, password));
+                                  // },
+                                  success: function (xhr) {
+                                    console.log('Success!', xhr.responseText);
+                                  },
+                                  error: function (xhr, errorThrown) {
+                                    console.log('Error!', errorThrown);
+                                  }
+                              });
+                              function make_base_auth(user, password) {
+                                var tok = user + ':' + password;
+                                var hash = btoa(tok);
+                                return 'Basic ' + hash;
+                            }
+                            });
+  });
           
         </script>
-
-        
-    </head>
+  </head>
 
 
-    
-    <body style="background-color: #dae4c8;" onload="getItems()" >
+
+  <body style="background-color: #dae4c8;" onload="getItems()">
 
 
-      <!-- Login/Signup -->
+    <!-- Login/Signup -->
 
-      <div class="modal fade" id="Login-Sign" aria-hidden="true" aria-labelledby="Login-SignLabel" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="addArtistLabel">Login/Signup</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
+    <div class="modal fade" id="Login-Sign" aria-hidden="true"
+      aria-labelledby="Login-SignLabel" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addArtistLabel">Login/Signup</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"
+              aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
             <div class="modal-body">
-              <div class="modal-body">
-                <form>
-                  <div class="mb-3">
-                    <label for="recipient-name" class="col-form-label">Username:</label>
-                    <input type="text" class="form-control" id="username" required>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label for="recipient-name" class="col-form-label">Email:</label>
-                    <input type="email" class="form-control" id="email" required>
-                  </div>
-                  
-
-                  <div class="mb-3">
-                    <label for="recipient-name" class="col-form-label">Password:</label>
-                    <input type="password" class="form-control" id="pwd" required>
-                  </div>
-                  
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                  <!-- <button type="submit" class="btn btn-primary">Add</button> -->
-                  <button type="submit" class="btn btn-primary" data-bs-target="#" data-bs-toggle="modal" data-bs-dismiss="modal">Register</button>
-                  <a class="btn btn-primary" data-bs-toggle="modal" href="#login" role="button">Already Registered? Login here!</a>
+              <form>
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Username:</label>
+                  <input type="text" class="form-control" id="username"
+                    required>
                 </div>
-                </form>
-              </div>
+
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Email:</label>
+                  <input type="email" class="form-control" id="email" required>
+                </div>
+
+
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Password:</label>
+                  <input type="password" class="form-control" id="pwd" required>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary"
+                    data-bs-dismiss="modal">Close</button>
+                  <!-- <button type="submit" class="btn btn-primary">Add</button> -->
+                  <button type="submit" class="btn btn-primary"
+                    data-bs-target="#" data-bs-toggle="modal" id="reg"
+                    data-bs-dismiss="modal">Register</button>
+                  <a class="btn btn-primary" data-bs-toggle="modal"
+                    href="#login" role="button">Already Registered? Login here!</a>
+                </div>
+              </form>
             </div>
-            <div class="modal-footer">
-              
-            </div>
+          </div>
+          <div class="modal-footer">
+
           </div>
         </div>
       </div>
+    </div>
 
     <!-- End -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="#">Spoofify</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-              <div class="navbar-nav">
-                <a class="nav-item nav-link active" href="#">Home</a>
-                <a class="nav-item nav-link" href="#">Artists</a>
-                <a class="nav-item nav-link" href="#"></a>
-                <button type="button" style="color:black; border-radius: 6px; float: right;  position: relative; left: 480%;" lass="nav-item nav-link" data-bs-toggle="modal" data-bs-target="#Login-Sign" data-bs-whatever="@mdo" id="getArtistNames">Login/Sign-up</button>
-              </div>
-            </div>
-          </nav><br><br>
-          <h3>
-            TOP 10 Songs
-            <small class="text-muted">Based on Ratings</small>&nbsp;<button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#song" data-bs-whatever="@mdo" id="getArtistNames">Add a New Song</button>
-          </h3>
-          <br>
-          <div class="modal fade" id="song" tabindex="-1" aria-labelledby="songLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="songLabel">Add a new Song</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <form>
-                    <div class="mb-3">
-                      <label for="recipient-name" class="col-form-label">Name:</label>
-                      <input type="text" class="form-control" id="name" required>
-                    </div>
-                    <div class="mb-3">
-                      <label for="message-text" class="col-form-label">Artist:</label>
-                      <select id="artistList" class="form-control" required>
-                        <option value="0">Select</option>
-                      </select>
-                      <a class="btn btn-primary" data-bs-toggle="modal" href="#addArtist" role="button">Not here? Then Add here!</a>
-                    </div>
-                    <div class="mb-3">
-                      <label for="message-text" class="col-form-label">Date of Release:</label>
-                      <input type="date" class="form-control" id="DOR" required>
-                    </div>
-                    <div class="mb-3">
-                      <label for="message-text" class="col-form-label">Image:</label>
-                      <input type="file" class="form-control" id="DOR" required>
-                    </div>
-                    
-
-                    <label for="message-text" class="col-form-label">Ratings:</label>
-                    <div class="rating">
-                      
-                    <div class="mb-3">
-                      <label>
-                        <input type="radio" name="stars" value="1" />
-                        <span class="icon">★</span>
-                      </label>
-                      <label>
-                        <input type="radio" name="stars" value="2" />
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                      </label>
-                      <label>
-                        <input type="radio" name="stars" value="3" />
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>   
-                      </label>
-                      <label>
-                        <input type="radio" name="stars" value="4" />
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                      </label>
-                      <label>
-                        <input type="radio" name="stars" value="5" />
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Add</button>
-                  </div>
-                  </form>
-                </div>
-               
-              </div>
-            </div>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">Spoofify</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse"
+        data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup"
+        aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link active" href="#">Home</a>
+          <a class="nav-item nav-link" href="#">Artists</a>
+          <a class="nav-item nav-link" href="#"></a>
+          <button type="button" style="color:black; border-radius: 6px; float:
+            right; position: relative; left: 480%;" lass="nav-item nav-link"
+            data-bs-toggle="modal" data-bs-target="#Login-Sign"
+            data-bs-whatever="@mdo" id="getArtistNames">Login/Sign-up</button>
+        </div>
+      </div>
+    </nav><br><br>
+    <h3>
+      TOP 10 Songs
+      <small class="text-muted">Based on Ratings</small>&nbsp;<button
+        type="button" class="btn btn-secondary" data-bs-toggle="modal"
+        data-bs-target="#song" data-bs-whatever="@mdo" id="getArtistNames">Add a
+        New Song</button>
+    </h3>
+    <br>
+    <div class="modal fade" id="song" tabindex="-1" aria-labelledby="songLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="songLabel">Add a new Song</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"
+              aria-label="Close"></button>
           </div>
-          
-            
-          <table class="table table-striped table-">
-            <thead class="thead-dark">
-                <tr>
-                  <th>#</th>
-                  <th>Cover</th>
-                  <th>Name</th>
-                  <th>Artist</th>
-                  <th>Ratings</th>
-                  <th>Your Rating</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>January</td>
-                  <td>$100</td>
-                  <td>January</td>
-                  <td>$100</td>
-                  <td>January</td>
-                  <td>$100</td>
-                </tr>
-                <tr>
-                  <td>February</td>
-                  <td>$80</td>
-                  <td>January</td>
-                  <td>$100</td>
-                  <td>January</td>
-                  <td>$100</td>
-                </tr>
-            </tbody>
-          </table><br><br>
-
-
-          <h3>
-            TOP 10 Artists
-            <small class="text-muted">Based on Ratings of thier songs</small>&nbsp;
-            <!-- <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#artist" data-bs-whatever="@mdo">Add a New Song</button> -->
-          </h3><br>
-
-          <div class="modal fade" id="artist" tabindex="-1" aria-labelledby="artistLabel" aria-hidden="true">
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h5 class="modal-title" id="artistLabel">Add a new Song</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <form>
-                    <div class="mb-3">
-                      <label for="recipient-name" class="col-form-label">Name:</label>
-                      <input type="text" class="form-control" id="name" required>
-                    </div>
-                    <div class="mb-3">
-                      <label for="message-text" class="col-form-label">Artist:</label>
-                      <select id="artist" class="form-control" required>
-                        <option value="0">Select</option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <label for="message-text" class="col-form-label">Date of Release:</label>
-                      <input type="date" class="form-control" id="DOR" required>
-                    </div>
-                    <div class="mb-3">
-                      <label for="message-text" class="col-form-label">Image:</label>
-                      <input type="file" class="form-control" id="DOR" required>
-                    </div>
-                    
-
-                    <label for="message-text" class="col-form-label">Ratings:</label>
-                    <div class="rating">
-                      
-                    <div class="mb-3">
-                      <label>
-                        <input type="radio" name="stars" value="1" />
-                        <span class="icon">★</span>
-                      </label>
-                      <label>
-                        <input type="radio" name="stars" value="2" />
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                      </label>
-                      <label>
-                        <input type="radio" name="stars" value="3" />
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>   
-                      </label>
-                      <label>
-                        <input type="radio" name="stars" value="4" />
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                      </label>
-                      <label>
-                        <input type="radio" name="stars" value="5" />
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                        <span class="icon">★</span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Send message</button>
-                  </div>
-                  </form>
-                </div>
-               
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="recipient-name" class="col-form-label">Name:</label>
+                <input type="text" class="form-control" id="name" required>
               </div>
-            </div>
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label">Artist:</label>
+                <select id="artistList" class="form-control" required>
+                  <option value="0">Select</option>
+                </select>
+                <a class="btn btn-primary" data-bs-toggle="modal"
+                  href="#addArtist" role="button">Not here? Then Add here!</a>
+              </div>
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label">Date of
+                  Release:</label>
+                <input type="date" class="form-control" id="DOR" required>
+              </div>
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label">Image:</label>
+                <input type="file" class="form-control" id="DOR" required>
+              </div>
+
+
+              <label for="message-text" class="col-form-label">Ratings:</label>
+              <div class="rating">
+
+                <div class="mb-3">
+                  <label>
+                    <input type="radio" name="stars" value="1" />
+                    <span class="icon">★</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="stars" value="2" />
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="stars" value="3" />
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="stars" value="4" />
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="stars" value="5" />
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                  </label>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                  data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Add</button>
+              </div>
+            </form>
           </div>
-          
-          <table class="table table-striped table-">
-            <thead class="thead-dark">
-                <tr>
-                  <th>#</th>
-                  <th>Cover</th>
-                  <th>Name</th>
-                  <th>Artist</th>
-                  <th>Ratings</th>
-                  <th>Your Rating</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>January</td>
-                  <td>$100</td>
-                  <td>January</td>
-                  <td>$100</td>
-                  <td>January</td>
-                  <td>$100</td>
-                </tr>
-                <tr>
-                  <td>February</td>
-                  <td>$80</td>
-                  <td>January</td>
-                  <td>$100</td>
-                  <td>January</td>
-                  <td>$100</td>
-                </tr>
-            </tbody>
-          </table>
-        
-        <script src="" async defer>
+
+        </div>
+      </div>
+    </div>
+
+
+    <table class="table table-striped table-">
+      <thead class="thead-dark">
+        <tr>
+          <th>#</th>
+          <th>Cover</th>
+          <th>Name</th>
+          <th>Artist</th>
+          <th>Ratings</th>
+          <th>Your Rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>January</td>
+          <td>$100</td>
+          <td>January</td>
+          <td>$100</td>
+          <td>January</td>
+          <td>$100</td>
+        </tr>
+        <tr>
+          <td>February</td>
+          <td>$80</td>
+          <td>January</td>
+          <td>$100</td>
+          <td>January</td>
+          <td>$100</td>
+        </tr>
+      </tbody>
+    </table><br><br>
+
+
+    <h3>
+      TOP 10 Artists
+      <small class="text-muted">Based on Ratings of thier songs</small>&nbsp;
+      <!-- <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#artist" data-bs-whatever="@mdo">Add a New Song</button> -->
+    </h3><br>
+
+    <div class="modal fade" id="artist" tabindex="-1"
+      aria-labelledby="artistLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="artistLabel">Add a new Song</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"
+              aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-3">
+                <label for="recipient-name" class="col-form-label">Name:</label>
+                <input type="text" class="form-control" id="name" required>
+              </div>
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label">Artist:</label>
+                <select id="artist" class="form-control" required>
+                  <option value="0">Select</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label">Date of
+                  Release:</label>
+                <input type="date" class="form-control" id="DOR" required>
+              </div>
+              <div class="mb-3">
+                <label for="message-text" class="col-form-label">Image:</label>
+                <input type="file" class="form-control" id="DOR" required>
+              </div>
+
+
+              <label for="message-text" class="col-form-label">Ratings:</label>
+              <div class="rating">
+
+                <div class="mb-3">
+                  <label>
+                    <input type="radio" name="stars" value="1" />
+                    <span class="icon">★</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="stars" value="2" />
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="stars" value="3" />
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="stars" value="4" />
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="stars" value="5" />
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                    <span class="icon">★</span>
+                  </label>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                  data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Send message</button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <table class="table table-striped table-">
+      <thead class="thead-dark">
+        <tr>
+          <th>#</th>
+          <th>Cover</th>
+          <th>Name</th>
+          <th>Artist</th>
+          <th>Ratings</th>
+          <th>Your Rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>January</td>
+          <td>$100</td>
+          <td>January</td>
+          <td>$100</td>
+          <td>January</td>
+          <td>$100</td>
+        </tr>
+        <tr>
+          <td>February</td>
+          <td>$80</td>
+          <td>January</td>
+          <td>$100</td>
+          <td>January</td>
+          <td>$100</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script src="" async defer>
 
           
 
@@ -407,87 +506,101 @@
           
         
         </script>
-
-
-        <div class="modal fade" id="addArtist" aria-hidden="true" aria-labelledby="addArtistLabel" tabindex="-1">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="addArtistLabel">Add New Artist</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <div class="modal-body">
-                  <form>
-                    <div class="mb-3">
-                      <label for="recipient-name" class="col-form-label">Name:</label>
-                      <input type="text" class="form-control" id="name" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                      <label for="message-text" class="col-form-label">Date of Birth:</label>
-                      <input type="date" class="form-control" id="DOB" required>
-                    </div>
-                    
-
-                    <div class="mb-3">
-                      <label for="message-text" class="col-form-label">Bio:</label>
-                      <textarea id="bio" class="form-control" rows="5" cols="20"></textarea>
-                    </div>
-                    
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <!-- <button type="submit" class="btn btn-primary">Add</button> -->
-                    <button type="submit" class="btn btn-primary" data-bs-target="#song" data-bs-toggle="modal" data-bs-dismiss="modal">Add</button>
-                  </div>
-                  </form>
+    <div class="modal fade" id="addArtist" aria-hidden="true"
+      aria-labelledby="addArtistLabel" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addArtistLabel">Add New Artist</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"
+              aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="modal-body">
+              <form>
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Name:</label>
+                  <input type="text" class="form-control" id="name" required>
                 </div>
-              </div>
-              <div class="modal-footer">
-                
-              </div>
+
+                <div class="mb-3">
+                  <label for="message-text" class="col-form-label">Date of
+                    Birth:</label>
+                  <input type="date" class="form-control" id="DOB" required>
+                </div>
+
+
+                <div class="mb-3">
+                  <label for="message-text" class="col-form-label">Bio:</label>
+                  <textarea id="bio" class="form-control" rows="5" cols="20"></textarea>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary"
+                    data-bs-dismiss="modal">Close</button>
+                  <!-- <button type="submit" class="btn btn-primary">Add</button> -->
+                  <button type="submit" class="btn btn-primary"
+                    data-bs-target="#song" data-bs-toggle="modal"
+                    data-bs-dismiss="modal">Add</button>
+                </div>
+              </form>
             </div>
           </div>
-        </div>
+          <div class="modal-footer">
 
-        <!-- Login -->
-        <div class="modal fade" id="login" aria-hidden="true" aria-labelledby="loginLabel" tabindex="-1">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="loginLabel">Login</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body">
-                <div class="modal-body">
-                  <form>
-                    <div class="mb-3">
-                      <label for="recipient-name" class="col-form-label">Username:</label>
-                      <input type="text" class="form-control" id="usernameL" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                      <label for="recipient-password" class="col-form-label">Password:</label>
-                      <input type="password" class="form-control" id="pwdL" required>
-                    </div>
-                    
-                  <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <!-- <button type="submit" class="btn btn-primary">Add</button> -->
-                    <button type="submit" class="btn btn-primary" data-bs-target="#" data-bs-toggle="modal" data-bs-dismiss="modal">Login</button>
-                    <a class="btn btn-primary" data-bs-toggle="modal" href="#addArtist" role="button">Not Registered? Then Sign-up here!</a>
-                  </div>
-                  </form>
-                </div>
-              </div>
-              <div class="modal-footer">
-                
-              </div>
-            </div>
           </div>
         </div>
-        <!-- Login end -->
-        <!-- <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
+      </div>
+    </div>
+
+    <!-- Login -->
+    <div class="modal fade" id="login" aria-hidden="true"
+      aria-labelledby="loginLabel" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="loginLabel">Login</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"
+              aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="modal-body">
+              <form>
+                <div class="mb-3">
+                  <label for="recipient-name" class="col-form-label">Username:</label>
+                  <input type="text" class="form-control" id="usernameL"
+                    required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="recipient-password" class="col-form-label">Password:</label>
+                  <input type="password" class="form-control" id="pwdL"
+                    required>
+                </div>
+
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary"
+                    data-bs-dismiss="modal">Close</button>
+                  <!-- <button type="submit" class="btn btn-primary">Add</button> -->
+                  <button type="submit" class="btn btn-primary"
+                    data-bs-target="#" id="btnLogin"
+                    data-bs-dismiss="modal">Login</button>
+                  <a class="btn btn-primary" data-bs-toggle="modal"
+                    href="#login-Sign" role="button">Not Registered? Then
+                    Sign-up
+                    here!</a>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="modal-footer">
+
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Login end -->
+    <!-- <div class="modal fade" id="exampleModalToggle2" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
               <div class="modal-header">
@@ -503,6 +616,5 @@
             </div>
           </div>
         </div> -->
-        
-    </body>
+  </body>
 </html>
