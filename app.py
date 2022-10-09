@@ -61,7 +61,7 @@ def login():
    return make_response('could not verify',  401, {'Authentication': '"login required"'})
 
 @app.route('/signup', methods=['POST'])
-def signup(): 
+def signup():
     """
     Endpoint to signup
     params:
@@ -69,12 +69,12 @@ def signup():
         - email
         - password
     """
-   data = request.get_json() 
-   hashed_password = generate_password_hash(data['password'], method='sha256')
-   new_user = User(user_name=data['username'], user_pwd=hashed_password, user_email=data["email"])
-   db.session.add(new_user) 
-   db.session.commit()   
-   return jsonify({'message': 'registered successfully'})
+    data = request.json
+    hashed_password = generate_password_hash(data['password'], method='sha256')
+    new_user = User(user_name=data['username'], user_pwd=hashed_password, user_email=data["email"])
+    db.session.add(new_user) 
+    db.session.commit()   
+    return jsonify({'message': 'registered successfully'})
 
 @app.route("/")
 def home():
