@@ -62,9 +62,16 @@ def login():
 
 @app.route('/signup', methods=['POST'])
 def signup(): 
+    """
+    Endpoint to signup
+    params:
+        - username
+        - email
+        - password
+    """
    data = request.get_json() 
    hashed_password = generate_password_hash(data['password'], method='sha256')
-   new_user = User(user_name=data['name'], user_pwd=hashed_password, user_email=data["email"])
+   new_user = User(user_name=data['username'], user_pwd=hashed_password, user_email=data["email"])
    db.session.add(new_user) 
    db.session.commit()   
    return jsonify({'message': 'registered successfully'})
