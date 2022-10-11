@@ -1,14 +1,13 @@
 import os, jwt
 from flask import Flask, request, json, jsonify, render_template, make_response
 
-# from flask_login import LoginManager
-# from flask_login import UserMixin
 import datetime
+from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from model import Music, Artist, Rating, User
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc
+from sqlalchemy import desc, func, nullslast
 
 app = Flask(__name__)
 
@@ -50,10 +49,10 @@ def token_required(f):
 def login():
    auth = request.authorization
    if not auth or not auth.username or not auth.password: 
-       return make_response('could not verify', 401, {'Authentication': 'login required"'})  
+       return make_response('could not verify', 401, {'Authentication': 'login required"'})  #401: Unauthorized response
  
-   user = db.session.execute(db.select(User).filter_by(user_name=auth.username)).first()[0]
-#    print(user)
+   user = db.session.execute(db.select(User.user_id, User.user_pwd).filter_by(user_name=auth.username)).first()
+
    if check_password_hash(user.user_pwd, auth.password):
        token = jwt.encode({'public_id' : user.user_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=45)}, app.config['SECRET_KEY'], "HS256")
        return jsonify({'token' : token})
@@ -69,8 +68,10 @@ def signup():
         - email
         - password
     """
-    data = request.get_json('data')
-    # print(data)
+    data = request.json
+    row= db.session.execute(db.select(User.user_name).filter(User.user_name==data["username"])).first()
+    if row: return({"error": "User already exists"}), 409
+
     hashed_password = generate_password_hash(data['password'], method='sha256')
     new_user = User(user_name=data['username'], user_pwd=hashed_password, user_email=data["email"])
     db.session.add(new_user) 
@@ -89,6 +90,7 @@ def add_music():
         - musicName
         - artistId
         - releaseDate
+        - rating
     file:
         - musicImage
     """
@@ -99,18 +101,26 @@ def add_music():
         "musicName" not in data
         or "releaseDate" not in data
         or "artistId" not in data
+        or "rating" not in data
     ):
-        return jsonify({"error": "missing parameters in request!"}), 400
+        return jsonify({"error": "missing parameters in request!"}), 400 #400: Bad Request response
 
     else:
         try:
+            row= db.session.execute(db.select(Music.music_name).filter(Music.music_name==data["musicName"])).first()
+            if row: return({"error": "Data already exists"}), 409 # 409: Conflict response 
+
             music = Music(music_name=data["musicName"], music_image=file, music_dor=data["releaseDate"], artist_id=data["artistId"])
             db.session.add(music)
             db.session.commit()
-        except:
-            return jsonify({"error": "Unexpected error!"}), 400
+            # music_data = db.session.execute(db.select(Music).filter(Music.music_name==data["musicName"])).first()[0]
+            # rating = Rating(music_id=music_data.music_id, rating_val=data["rating"])
+            # db.session.add(rating)
+            # db.session.commit()
+        except Exception as e:
+            return jsonify({"error": repr(e)}), 500 #500: Internal server error
         
-    return jsonify({"status": "success"})
+    return jsonify({"status": "success"}), 201 #201:created success
 
 @app.route("/addArtist", methods=["POST"])
 def add_artist():
@@ -129,18 +139,20 @@ def add_artist():
     ):
         return jsonify({"error": "missing parameters in request!"}), 400
     
-    artistBio=None
-    if data["artistBio"]:
-        artistBio=data["artistBio"]
+    
+    if not data["artistBio"]: data["artistBio"] = None
     else:
         try:
-            artist = Artist(artist_name=data["artistName"], music_dor=data["artistDob"], artist_bio=artistBio)
+            row= db.session.execute(db.select(Artist.artist_name).filter(Artist.artist_name==data["musicName"])).first()
+            if row: return({"error": "Data already exists"}), 409
+
+            artist = Artist(artist_name=data["artistName"], artist_dob=data["artistDob"], artist_bio=data["artistBio"])
             db.session.add(artist)
             db.session.commit()
-        except:
-            return jsonify({"error": "Unexpected error!"}), 400
+        except Exception as e:
+            return jsonify({"error": repr(e)}), 500
         
-    return jsonify({"status": "success"})
+    return jsonify({"status": "success"}), 201
 
 @app.route("/getArtist", methods=["GET"])
 def get_artist():
@@ -164,14 +176,18 @@ def get_top_ten_music():
     Endpoint to get top ten music
     """
     ans=[]
-    # data = db.session.execute(db.select(Music, Rating).filter(Music.artist_id==Rating.artist_id).order_by(desc(Rating.rating_val))).scalars()
-    
-    # for obj in data:
-    #     artist={}
-    #     print(obj)
-    #     ans.append(artist)
-
-    return jsonify(ans)
+    data = db.session.execute(db.session.query(Music.music_id, Music.music_name, Music.music_dor, Artist.artist_name, db.func.avg(Rating.rating_val)).join(Artist, Music.artist_id==Artist.artist_id).outerjoin(Rating, Music.music_id==Rating.music_id).group_by(Music.music_id).order_by(func.avg(Rating.rating_val).desc())).all()
+    print(data)
+    for obj in data:
+        music={}
+        music["musicId"]= obj[0]
+        music["musicName"]= obj[1]
+        music["musicDor"]= date.isoformat(obj[2])
+        music["artistName"]= obj[3]
+        if obj[4]==None: music["ratingAvg"]=0
+        else: music["ratingAvg"]= round(obj[4],2)
+        ans.append(music)
+    return jsonify({"result":ans})
 
 if __name__ == "__main__":
         app.run(debug=True)

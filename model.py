@@ -1,6 +1,3 @@
-# from passlib.apps import custom_app_context as pwd_context
-
-# from unicodedata import category
 from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
@@ -28,7 +25,6 @@ class Rating(db.Model):
     __tablename__ = 'ratings'
     rating_id = db.Column(db.Integer, primary_key=True)
     rating_val = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
-    artist_id = db.Column(db.ForeignKey("artist.artist_id"), nullable=False)
     music_id = db.Column(db.ForeignKey("music.music_id"), nullable=False)
     def __repr__(self):
         return '<Rating %r>' % self.music_id
