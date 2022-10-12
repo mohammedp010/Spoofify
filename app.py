@@ -3,11 +3,12 @@ from flask import Flask, request, json, jsonify, render_template, make_response
 
 import datetime
 from datetime import date
+from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from model import Music, Artist, Rating, User
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc, func, nullslast
+from sqlalchemy import desc, func, inspect
 
 app = Flask(__name__)
 
@@ -28,23 +29,23 @@ db = SQLAlchemy(app)
 db.init_app(app)
 
 
-
 def token_required(f):
    @wraps(f)
    def decorator(*args, **kwargs):
        token = None
        if 'x-access-tokens' in request.headers:
            token = request.headers['x-access-tokens']
- 
+
        if not token:
-           return jsonify({'message': 'a valid token is missing'})
+           return jsonify({'message': 'valid token missing'}), 401
+
        try:
            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-           current_user = Users.query.filter_by(public_id=data['public_id']).first()
+           user = db.session.execute(db.select(User).filter(User.user_id==data['public_id'])).first()
        except:
-           return jsonify({'message': 'token is invalid'})
+           return jsonify({'message': 'token is invalid'}), 401
  
-       return f(current_user, *args, **kwargs)
+       return f(user, *args, **kwargs)
    return decorator
 
 @app.route('/login', methods=['POST']) 
@@ -85,7 +86,8 @@ def home():
     return render_template('index.html')
 
 @app.route("/addMusic", methods=["POST"])
-def add_music():
+@token_required
+def add_music(user):
     """
     Endpoint to add music
     params: 
@@ -115,17 +117,18 @@ def add_music():
             music = Music(music_name=data["musicName"], music_image=file, music_dor=data["releaseDate"], artist_id=data["artistId"])
             db.session.add(music)
             db.session.commit()
-            # music_data = db.session.execute(db.select(Music).filter(Music.music_name==data["musicName"])).first()[0]
-            # rating = Rating(music_id=music_data.music_id, rating_val=data["rating"])
-            # db.session.add(rating)
-            # db.session.commit()
+            music_data = db.session.execute(db.select(Music.music_id).filter(Music.music_name==data["musicName"])).first()
+            rating = Rating(music_id=music_data.music_id, rating_val=data["rating"],user_id=user[0].user_id)
+            db.session.add(rating)
+            db.session.commit()
         except Exception as e:
             return jsonify({"error": repr(e)}), 500 #500: Internal server error
         
     return jsonify({"status": "success"}), 201 #201:created success
 
 @app.route("/addArtist", methods=["POST"])
-def add_artist():
+@token_required
+def add_artist(user_id):
     """
     Endpoint to add artist
     params: 
@@ -141,11 +144,11 @@ def add_artist():
     ):
         return jsonify({"error": "missing parameters in request!"}), 400
     
-    
     if not data["artistBio"]: data["artistBio"] = None
+
     else:
         try:
-            row= db.session.execute(db.select(Artist.artist_name).filter(Artist.artist_name==data["musicName"])).first()
+            row= db.session.execute(db.select(Artist.artist_name).filter(Artist.artist_name==data["artistName"])).first()
             if row: return({"error": "Data already exists"}), 409
 
             artist = Artist(artist_name=data["artistName"], artist_dob=data["artistDob"], artist_bio=data["artistBio"])
@@ -171,7 +174,7 @@ def get_artist():
         else: artist["avgRating"]= round(float(obj.avg_rating), 2)
         ans.append(artist)
 
-    return jsonify(ans)
+    return jsonify(ans), 200
 
 @app.route("/getMusic", methods=["GET"])
 def get_top_ten_music():
@@ -189,7 +192,7 @@ def get_top_ten_music():
         if obj[4]==None: music["avgRating"]= 0
         else: music["ratingAvg"]= round(float(obj.avg_rating),2)
         ans.append(music)
-    return jsonify({"result":ans})
+    return jsonify(ans), 200
 
 if __name__ == "__main__":
         app.run(debug=True)

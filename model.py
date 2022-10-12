@@ -26,6 +26,7 @@ class Rating(db.Model):
     rating_id = db.Column(db.Integer, primary_key=True)
     rating_val = db.Column(db.Numeric(precision=10, scale=2), nullable=False)
     music_id = db.Column(db.ForeignKey("music.music_id"), nullable=False)
+    user_id = db.Column(db.ForeignKey("users.user_id"), nullable=False)
     def __repr__(self):
         return '<Rating %r>' % self.music_id
 
