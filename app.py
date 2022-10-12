@@ -11,6 +11,8 @@ from sqlalchemy import desc, func, nullslast
 
 app = Flask(__name__)
 
+app.config['SECRET_KEY']='004f2af45d3a4e161a7dd2d17fdae47f'
+
 # SQL configuration
 user = 'root'
 password = ''
@@ -25,7 +27,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = url
 db = SQLAlchemy(app)
 db.init_app(app)
 
-app.config['SECRET_KEY']='004f2af45d3a4e161a7dd2d17fdae47f'
+
 
 def token_required(f):
    @wraps(f)
@@ -160,32 +162,32 @@ def get_artist():
     Endpoint to get all music artists
     """
     ans=[]
-    data = db.session.execute(db.select(Artist).order_by(Artist.artist_name)).scalars()
-    
+    data = db.session.execute(db.select(Artist.artist_id, Artist.artist_name, db.func.avg(Rating.rating_val).label("avg_rating")).join(Music, Music.artist_id==Artist.artist_id).outerjoin(Rating, Music.music_id==Rating.music_id).group_by(Artist.artist_id).order_by(func.avg(Rating.rating_val).desc())).all()
     for obj in data:
         artist={}
         artist["artistId"]= obj.artist_id
         artist["artistName"]= obj.artist_name
+        if obj.avg_rating == None: artist["avgRating"]= 0
+        else: artist["avgRating"]= round(float(obj.avg_rating), 2)
         ans.append(artist)
 
     return jsonify(ans)
 
-@app.route("/getTopTenMusic", methods=["GET"])
+@app.route("/getMusic", methods=["GET"])
 def get_top_ten_music():
     """
     Endpoint to get top ten music
     """
     ans=[]
-    data = db.session.execute(db.session.query(Music.music_id, Music.music_name, Music.music_dor, Artist.artist_name, db.func.avg(Rating.rating_val)).join(Artist, Music.artist_id==Artist.artist_id).outerjoin(Rating, Music.music_id==Rating.music_id).group_by(Music.music_id).order_by(func.avg(Rating.rating_val).desc())).all()
-    print(data)
+    data = db.session.execute(db.select(Music.music_id, Music.music_name, Music.music_dor, Artist.artist_name, db.func.avg(Rating.rating_val).label("avg_rating")).join(Artist, Music.artist_id==Artist.artist_id).outerjoin(Rating, Music.music_id==Rating.music_id).group_by(Music.music_id).order_by(func.avg(Rating.rating_val).desc())).all()
     for obj in data:
         music={}
-        music["musicId"]= obj[0]
-        music["musicName"]= obj[1]
-        music["musicDor"]= date.isoformat(obj[2])
-        music["artistName"]= obj[3]
-        if obj[4]==None: music["ratingAvg"]=0
-        else: music["ratingAvg"]= round(obj[4],2)
+        music["musicId"]= obj.music_id
+        music["musicName"]= obj.music_name
+        music["musicDor"]= date.isoformat(obj.music_dor)
+        music["artistName"]= obj.artist_name
+        if obj[4]==None: music["avgRating"]= 0
+        else: music["ratingAvg"]= round(float(obj.avg_rating),2)
         ans.append(music)
     return jsonify({"result":ans})
 
