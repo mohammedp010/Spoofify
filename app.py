@@ -165,11 +165,12 @@ def get_artist():
     Endpoint to get all music artists
     """
     ans=[]
-    data = db.session.execute(db.select(Artist.artist_id, Artist.artist_name, db.func.avg(Rating.rating_val).label("avg_rating")).join(Music, Music.artist_id==Artist.artist_id).outerjoin(Rating, Music.music_id==Rating.music_id).group_by(Artist.artist_id).order_by(func.avg(Rating.rating_val).desc())).all()
+    data = db.session.execute(db.select(Artist.artist_id, Artist.artist_name, Artist.artist_bio, db.func.avg(Rating.rating_val).label("avg_rating")).join(Music, Music.artist_id==Artist.artist_id).outerjoin(Rating, Music.music_id==Rating.music_id).group_by(Artist.artist_id).order_by(func.avg(Rating.rating_val).desc())).all()
     for obj in data:
         artist={}
         artist["artistId"]= obj.artist_id
         artist["artistName"]= obj.artist_name
+        artist["artistBio"]= obj.artist_bio
         if obj.avg_rating == None: artist["avgRating"]= 0
         else: artist["avgRating"]= round(float(obj.avg_rating), 2)
         ans.append(artist)
@@ -190,7 +191,7 @@ def get_top_ten_music():
         music["musicDor"]= date.isoformat(obj.music_dor)
         music["artistName"]= obj.artist_name
         if obj[4]==None: music["avgRating"]= 0
-        else: music["ratingAvg"]= round(float(obj.avg_rating),2)
+        else: music["avgRating"]= round(float(obj.avg_rating),2)
         ans.append(music)
     return jsonify(ans), 200
 
