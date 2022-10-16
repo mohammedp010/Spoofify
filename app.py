@@ -1,5 +1,5 @@
-import os, jwt
-from flask import Flask, request, json, jsonify, render_template, make_response
+import io, jwt, json
+from flask import Flask, request, jsonify, render_template, make_response, send_file
 
 import datetime
 from datetime import date
@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from model import Music, Artist, Rating, User
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import desc, func, inspect
+from sqlalchemy import func
 
 app = Flask(__name__)
 
@@ -178,7 +178,7 @@ def get_artist():
     return jsonify(ans), 200
 
 @app.route("/getMusic", methods=["GET"])
-def get_top_ten_music():
+def get_music():
     """
     Endpoint to get top ten music
     """
@@ -194,6 +194,11 @@ def get_top_ten_music():
         else: music["avgRating"]= round(float(obj.avg_rating),2)
         ans.append(music)
     return jsonify(ans), 200
+
+@app.route('/getMusicImage/<id>')
+def get_image(id=None):
+    file = db.session.execute(db.select(Music.music_image).filter(Music.music_id==id)).first()
+    return send_file(io.BytesIO(file.music_image), mimetype='image/jpeg' )
 
 if __name__ == "__main__":
         app.run(debug=True)
