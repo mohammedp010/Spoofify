@@ -25,6 +25,13 @@
       integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
       crossorigin="anonymous"></script>
     <script>
+                          $(document).ready(function ()
+                          {
+                            if(sessionStorage.['token'])
+                            {
+                              alert("User is logged in");
+                            }
+                          }
                           function getItems() {
                             $.ajax({
                               url: "/getArtist",
@@ -76,8 +83,7 @@
                             });
         });
 
-</script>
-<script>
+
                           $(document).ready(function () {
 
                             $("#btnLogin").click(function () {
@@ -92,37 +98,20 @@
                                   type: 'POST',
                                   url: '/login',
                                   dataType: 'json',
-                                  // data: JSON.stringify({"username": username, "password": password}),
-                                  // contentType: "application/json",
                                   async: false,
-                                  // headers: {
-                                  //   'Authorization': 'Basic ' + btoa(username + ':' + password)
-                                  // },
                                   beforeSend: function (xhr){ 
                                       xhr.setRequestHeader('Authorization',"Basic " + btoa(username + ":" + password));
                                   },
-                                  // contentType: 'application/json;charset=UTF-8',
-                                //   beforeSend: function (xhr) {
-                                //     xhr.setRequestHeader ("Authorization", "Basic " + btoa(username + ":" + password));
-                                // },
-                                  //whatever you need
-                                  // beforeSend: function (xhr) {
-                                  //     xhr.setRequestHeader('Authorization', make_base_auth(username, password));
-                                  // },
-                                  success: function (xhr) {
-                                    alert(xhr.responseText);
-                                    console.log('Success!', xhr.responseText);
+                                  success: function (data) {
+                                    alert(data.token);
+                                    sessionStorage.setItem("token", data.token) 
                                   },
                                   error: function (xhr, errorThrown) {
                                     alert('Error!', xhr.responseText, errorThrown);
                                     console.log('Error!', errorThrown);
                                   }
                               });
-                              function make_base_auth(user, password) {
-                                var tok = user + ':' + password;
-                                var hash = btoa(tok);
-                                return 'Basic ' + hash;
-                            }
+                            
                             });
   });
 
@@ -229,9 +218,10 @@
                         // for(int i=1;i<data.length;i++) {
                           var i =1 ;
                         data.forEach((itemData) => {
-                          
+
                           temp += "<tr>";
                           temp+= "<td>" + i++ + "</td>";
+                          temp+= "<td>" + "<img src='http://127.0.0.1:5000/getMusicImage/"+itemData.musicId+"' width = '50' height = '50'>" + "</td>";
                           temp += "<td>" + itemData.musicName + "</td>";
                           temp += "<td>" + itemData.artistName + "</td>";
                           temp += "<td>" + itemData.musicDor + "</td>";
@@ -240,14 +230,31 @@
                         });
           
                         document.getElementById('musicData').innerHTML = temp;
+
+                        // event.preventDefault();
+                        function getImage(id){
+
+                          var $img = $('<img/>', {
+                            src: "/getMusicImage/" + id
+                          });   
+                         $( "#imagecontent" ).append( $img);
+                         return  $img;
+                        // $.ajax({
+                        //   url: "/getMusicImage/" + id,
+                        //   method: 'GET',
+                        //   success: function(response) { 
+                        //   // for(var i = 0; i < response.data.length; i++){
+                        //     // console.log(response.data[i]);
+                        //     // console.log(response.data[i].images.original);
+                        //   $('#imagecontent').append('<img src="data:image/jpeg;,' + imageData + '" />');
+                        //   }
+                        // });
                       }
+                    }
                     }
                   )
                 }
               )
-              
-
-            
           
         </script>
   </head>
@@ -348,7 +355,7 @@
             <form>
               <div class="mb-3">
                 <label for="recipient-name" class="col-form-label">Name:</label>
-                <input type="text" class="form-control" id="name" required>
+                <input type="text" class="form-control" id="songName" required>
               </div>
               <div class="mb-3">
                 <label for="message-text" class="col-form-label">Artist:</label>
@@ -365,7 +372,7 @@
               </div>
               <div class="mb-3">
                 <label for="message-text" class="col-form-label">Image:</label>
-                <input type="file" class="form-control" id="DOR" required>
+                <input type="file" class="form-control" id="coverImage" required>
               </div>
 
 
@@ -422,7 +429,8 @@
       <thead class="thead-dark">
         <tr>
           <th>#</th>
-          <th>Name</th>
+          <th>Title</th>
+          <th></th>
           <th>Artist</th>
           <th>Date of Release</th>
           <th>Ratings</th>

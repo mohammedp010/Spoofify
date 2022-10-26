@@ -85,6 +85,12 @@ def signup():
 def home():
     return render_template('index.html')
 
+@app.route("/getUser", methods=["POST"])
+@token_required
+def get_user(user):
+        usr= User(user_id=user[0].user_id)
+        return jsonify({'userName': usr.user_name})
+    
 @app.route("/addMusic", methods=["POST"])
 @token_required
 def add_music(user):
